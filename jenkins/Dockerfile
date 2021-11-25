@@ -1,0 +1,25 @@
+FROM jenkins/jenkins:latest
+# This is the GID for the docker.sock file
+ARG DOCKER_GID=968
+ENV JENKINS_OPTS="--prefix=/jenkins --handlerCountMax=300 --logfile=/var/log/jenkins/jenkins.log --webroot=/var/cache/jenkins/war"
+ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/ref/casc.yaml"
+USER root
+COPY --chown=jenkins:jenkins ./config/executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
+COPY --chown=jenkins:jenkins ./config/plugins.txt /usr/share/jenkins/ref/plugins.txt
+#### Mounting to ease development
+#COPY --chown=jenkins:jenkins ./config/casc.yaml /usr/share/jenkins/ref/casc.yaml
+RUN mkdir /var/log/jenkins
+RUN mkdir /var/cache/jenkins
+RUN chown -R jenkins:jenkins /var/log/jenkins
+RUN chown -R jenkins:jenkins /var/cache/jenkins
+RUN groupadd -g ${DOCKER_GID} docker
+RUN usermod -a -G docker jenkins
+
+#### Commented out for dev purposes
+# RUN apt-get update \
+#     && apt-get install -y \
+#     docker \
+#     docker.io
+# RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
+
+USER jenkins

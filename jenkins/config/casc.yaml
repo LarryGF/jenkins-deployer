@@ -1,0 +1,76 @@
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - string:
+          description: "Github OAuth Token"
+          id: "github-token"
+          scope: GLOBAL
+          secret: ${GITHUB_ACCESS_TOKEN}
+
+security:
+  queueItemAuthenticator:
+    authenticators:
+      - global:
+          strategy: triggeringUsersAuthorizationStrategy
+
+jenkins:
+  securityRealm:
+    github:
+    # Need to create OAuth connector in GitHub
+      githubWebUri: "https://github.com"
+      githubApiUri: "https://api.github.com"
+      clientID: ${GITHUB_CLIENT_ID}
+      clientSecret: ${GITHUB_CLIENT_SECRET}
+      oauthScopes: "read:org,user:email"
+  remotingSecurity:
+    enabled: true
+
+  authorizationStrategy:
+    # ALL params are required
+    github:
+      # This is case sensitive
+      adminUserNames: "LarryGF,LeoTarrero"
+      allowAnonymousJobStatusPermission: false
+      allowAnonymousReadPermission: false
+      allowCcTrayPermission: true
+      allowGithubWebHookPermission: true
+      authenticatedUserCreateJobPermission: true
+      authenticatedUserReadPermission: true
+      organizationNames: ""
+      useRepositoryPermissions: true    
+ 
+  clouds:
+    - docker:
+        name: "docker"
+        dockerApi:
+          dockerHost:
+            uri: "unix:///var/run/docker.sock"
+        templates:
+          - labelString: "docker-agent"
+            dockerTemplateBase:
+              image: "jenkins/agent"
+              # volumes:
+              #   - first:/hello
+              #   - second:/world
+              # environmentsString: |
+              #   hello=world
+              #   foo=bar
+            remoteFs: "/home/jenkins/agent"
+            connector:
+              attach:
+                user: "jenkins"
+            instanceCapStr: "10"
+            retentionStrategy:
+              idleMinutes: 1
+
+unclassified:
+  location:
+    url: http://mordor:8080/jenkins
+
+  githubpluginconfig:
+    configs:
+      - name: "GitHub"
+        apiUrl: "https://api.github.com"
+        credentialsId: "github-token"
+        manageHooks: true

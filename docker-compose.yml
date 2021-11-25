@@ -1,0 +1,38 @@
+version: "3.7"
+services:
+  jenkins_main:
+    build:
+      context: ./jenkins
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - JENKINS_ADMIN_ID=${JENKINS_ADMIN_ID}
+      - JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}
+      - DOCKER_URI=${DOCKER_URI}
+
+    ports:
+      - 8080:8080
+      - 50000:50000
+    container_name: jenkins
+    networks:
+          - jenkins-net
+    volumes:
+      # Folders need to have 1000:1000 ownership or use volume
+      - ./jenkins_home:/var/jenkins_home
+      - ./jenkins_logs:/var/log/jenkins
+      - /var/run/docker.sock:/var/run/docker.sock
+      # just mounting to ease development
+      - ./jenkins/config/casc.yaml:/usr/share/jenkins/ref/casc.yaml
+  
+  web:
+    build:
+      context: ./web
+    ports:
+        - "80:80"
+    networks:
+          - jenkins-net
+
+networks:
+  jenkins-net:
