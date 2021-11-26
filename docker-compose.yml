@@ -3,6 +3,8 @@ services:
   jenkins_main:
     build:
       context: ./jenkins
+      args:
+        DOCKER_GID: ${DOCKER_GID}
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       - JENKINS_ADMIN_ID=${JENKINS_ADMIN_ID}
@@ -10,7 +12,10 @@ services:
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
       - GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}
+      - GITHUB_PRIVATE_KEY=${GITHUB_PRIVATE_KEY}
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
       - DOCKER_URI=${DOCKER_URI}
+      - SSH_PRIVATE_FILE_PATH=${SSH_PRIVATE_FILE_PATH}
 
     ports:
       - 8080:8080

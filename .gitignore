@@ -1,3 +1,5 @@
 jenkins_home/*
 jenkins_logs/*
 .env
+keys/*
+jenkins/config/keys/*

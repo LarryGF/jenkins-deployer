@@ -23,3 +23,4 @@ blueocean:latest
 authorize-project:latest
 docker-plugin:latest
 github:latest
+job-dsl:latest
