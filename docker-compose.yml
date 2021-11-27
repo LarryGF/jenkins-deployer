@@ -46,17 +46,22 @@ services:
 
   vault-server:
     container_name: vault
-    image: vault:latest
+    build:
+      context: ./vault
     ports:
       - "8200:8200"
     environment:
-      # - VAULT_ADDR='http://0.0.0.0:8200'
-      - VAULT_DEV_ROOT_TOKEN_ID="vault-plaintext-root-token"
+      - VAULT_ADDR='http://0.0.0.0:8200'
+      - HOME=/var/vault
+      # - VAULT_DEV_ROOT_TOKEN_ID="vault-plaintext-root-token"
     cap_add:
       - IPC_LOCK
+
+    entrypoint: vault server -config=/vault/config/vault.json
+
     volumes:
-          - ./vault/file:/vault/file:rw
-          - ./vault/config:/vault/config:rw
+          - ./vault_data/file:/vault/file:rw
+          # - ./vault/config:/vault/config:rw
     networks:
       - jenkins-net
 
