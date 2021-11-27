@@ -7,6 +7,7 @@ USER root
 COPY --chown=jenkins:jenkins ./config/plugins.txt /usr/share/jenkins/ref/plugins.txt
 COPY --chown=jenkins:jenkins ./config/keys/converted-github-app.pem /tmp/converted-github-app.pem
 COPY --chown=jenkins:jenkins ./config/DSL-jobs /tmp/DSL-jobs
+
 #### Mounting to ease development
 #COPY --chown=jenkins:jenkins ./config/casc.yaml /usr/share/jenkins/ref/casc.yaml
 RUN mkdir /var/log/jenkins

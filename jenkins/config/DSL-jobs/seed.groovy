@@ -1,20 +1,20 @@
-multibranchPipelineJob('image-jenkins') {
-        branchSources {
-          github {
-            // The id option in the Git and GitHub branch source contexts is now mandatory (JENKINS-43693).
-            id('154563') // IMPORTANT: use a constant and unique identifier
-            scanCredentialsId('github-app')
-            repoOwner('larrygf')
-            //repository('my-repository')
-            // apiUri('http://my-github-server/api/v3') // Optional, needed for private github enterprise servers
-          }
+/* groovylint-disable CompileStatic */
+organizationFolder('GitHub Organization Folder') {
+    description('GitHub Organization folder configured with JCasC')
+    displayName("${GITHUB_REPO_OWNER}")
+    organizations {
+        github {
+            repoOwner("${GITHUB_REPO_OWNER}")
+            credentialsId('github-app')
+            apiUri('https://api.github.com')
+            traits {
+                gitHubBranchDiscovery {
+                    strategyId(1)
+                }
+                gitHubPullRequestDiscovery {
+                    strategyId(1)
+                }
+            }
         }
-        orphanedItemStrategy {
-          discardOldItems {
-            numToKeep(1)
-          }
-        }
-        triggers {
-          periodic(5)
-        }
-      }
+    }
+}

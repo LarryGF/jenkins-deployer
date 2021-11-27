@@ -2,25 +2,27 @@ credentials:
   system:
     domainCredentials:
     - credentials:
+      ## MANDATORY
+      # Need to setup Github OAuth: https://github.com/jenkinsci/github-oauth-plugin
       - string:
           description: "Github OAuth Token"
           id: "github-token"
           scope: GLOBAL
           secret: ${GITHUB_ACCESS_TOKEN}
-      # https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc
+      # Need to create a Github APP: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc
       - gitHubApp:
             appID: ${GITHUB_APP_ID}
             description: "GitHub app"
             id: "github-app"
             # apiUri: https://my-custom-github-enterprise.com/api/v3 # optional only required for GitHub enterprise
             privateKey: "${readFile:${SSH_PRIVATE_FILE_PATH}}"
-            # privateKey: "${GITHUB_PRIVATE_KEY}"
 
 security:
   queueItemAuthenticator:
     authenticators:
       - global:
-          strategy: triggeringUsersAuthorizationStrategy
+          ##TODO switch this to the running user and fix problem running docker
+          strategy: systemAuthorizationStrategy
 
 jenkins:
   numExecutors: 0
@@ -29,18 +31,17 @@ jenkins:
 
     This Jenkins is 100% configured and managed 'as code'.
     Config is now mostly handled by the 'Jenkins Configuration as Code' (JCasC) plugin.
-    JCasC config can be found in the jenkins.yaml file in the $JENKINS_HOME/casc/ folder.
 
-    Some settings are still injected from init.groovy.d scripts,
-    but these settings will be ported over to JCasC as support becomes available. 
   securityRealm:
     github:
+    ## MANDATORY
     # Need to create OAuth connector in GitHub
       githubWebUri: "https://github.com"
       githubApiUri: "https://api.github.com"
       clientID: ${GITHUB_CLIENT_ID}
       clientSecret: ${GITHUB_CLIENT_SECRET}
       oauthScopes: "read:org,user:email"
+
   remotingSecurity:
     enabled: true
 
@@ -48,7 +49,7 @@ jenkins:
     # ALL params are required
     github:
       # This is case sensitive
-      adminUserNames: "LarryGF,LeoTarrero"
+      adminUserNames: ${ADMIN_USERS}
       allowAnonymousJobStatusPermission: false
       allowAnonymousReadPermission: false
       allowCcTrayPermission: true
@@ -93,8 +94,8 @@ unclassified:
         credentialsId: "github-token"
         manageHooks: true
 
-# jobs:
-#   - file: /tmp/DSL-jobs/seed.groovy
+jobs:
+  - file: /tmp/DSL-jobs/seed.groovy
 
 tool:
   dockerTool:
