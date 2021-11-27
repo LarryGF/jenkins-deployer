@@ -3,3 +3,4 @@ jenkins_logs/*
 .env
 keys/*
 jenkins/config/keys/*
+vault/file/*
