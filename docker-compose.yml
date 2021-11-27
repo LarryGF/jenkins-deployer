@@ -1,6 +1,8 @@
 version: "3.7"
+
+
 services:
-  jenkins_main:
+  jenkins:
     build:
       context: ./jenkins
       args:
@@ -18,13 +20,12 @@ services:
       - SSH_PRIVATE_FILE_PATH=${SSH_PRIVATE_FILE_PATH}
       - ADMIN_USERS=${ADMIN_USERS}
       - GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER}
-
     ports:
       - 8080:8080
       - 50000:50000
     container_name: jenkins
     networks:
-          - jenkins-net
+      - jenkins-net
     volumes:
       # Folders need to have 1000:1000 ownership or use volume
       - ./jenkins_home:/var/jenkins_home
@@ -34,12 +35,31 @@ services:
       - ./jenkins/config/casc.yaml:/usr/share/jenkins/ref/casc.yaml
   
   web:
+    container_name: nginx
+
     build:
       context: ./web
     ports:
         - "80:80"
     networks:
-          - jenkins-net
+      - jenkins-net
+
+  vault-server:
+    container_name: vault
+    image: vault:latest
+    ports:
+      - "8200:8200"
+    environment:
+      # - VAULT_ADDR='http://0.0.0.0:8200'
+      - VAULT_DEV_ROOT_TOKEN_ID="vault-plaintext-root-token"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+          - ./vault/file:/vault/file:rw
+          - ./vault/config:/vault/config:rw
+    networks:
+      - jenkins-net
+
 
 networks:
   jenkins-net:

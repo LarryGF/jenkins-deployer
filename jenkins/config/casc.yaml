@@ -17,18 +17,22 @@ credentials:
             # apiUri: https://my-custom-github-enterprise.com/api/v3 # optional only required for GitHub enterprise
             privateKey: "${readFile:${SSH_PRIVATE_FILE_PATH}}"
 
+
 security:
   queueItemAuthenticator:
     authenticators:
       - global:
           ##TODO switch this to the running user and fix problem running docker
-          strategy: systemAuthorizationStrategy
+          strategy: triggeringUsersAuthorizationStrategy
+          # strategy: systemAuthorizationStrategy
+
 
 jenkins:
   numExecutors: 0
-  systemMessage: |
-    Welcome to our build server.
 
+  mode: EXCLUSIVE
+
+  systemMessage: |
     This Jenkins is 100% configured and managed 'as code'.
     Config is now mostly handled by the 'Jenkins Configuration as Code' (JCasC) plugin.
 
@@ -58,7 +62,7 @@ jenkins:
       authenticatedUserReadPermission: true
       organizationNames: ""
       useRepositoryPermissions: true    
- 
+
   clouds:
     - docker:
         name: "docker"
@@ -83,6 +87,11 @@ jenkins:
             retentionStrategy:
               idleMinutes: 1
 
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: true
+
+
 unclassified:
   location:
     url: http://mordor:8080/jenkins
@@ -93,9 +102,14 @@ unclassified:
         apiUrl: "https://api.github.com"
         credentialsId: "github-token"
         manageHooks: true
+  
+  ansiColorBuildWrapper:
+    globalColorMapName: xterm
+
 
 jobs:
   - file: /tmp/DSL-jobs/seed.groovy
+
 
 tool:
   dockerTool:
@@ -106,3 +120,12 @@ tool:
           installers:
             - fromDocker:
                 version: latest
+  
+  nodejs:
+    installations:
+    - name: "nodejs-17"
+      properties:
+      - installSource:
+          installers:
+            - nodeJSInstaller:
+                id: "NodeJS 17.1.0"
