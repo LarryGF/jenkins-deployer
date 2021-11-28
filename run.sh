@@ -7,10 +7,11 @@ printf "\nDocker GID: $docker_gid \n Bringing the compose up with correct owners
 DOCKER_GID=$docker_gid docker-compose up --build --remove-orphans -d
 
 #Need to set the VAULT_URL env var before running the script if it's running in a different host/port
-SLEEP_BETWEEN_RETRIES_SEC=${SLEEP_BETWEEN_RETRIES_SEC:-'5'}
+SLEEP_BETWEEN_RETRIES_SEC=${SLEEP_BETWEEN_RETRIES_SEC:-'2'}
 MAX_RETRIES=${MAX_RETRIES:-'3'}
 vault_addr=${VAULT_URL:-'http://127.0.0.1:8200'}
 vault_health_url="${vault_addr}/v1/sys/health"
+keys_file=${KEYS_FILE:-'./keys/keys'}
 
 printf "\nTrying to initialize Vault deployment running on: $vault_addr \nVerifying status of Vault deployment running on: $vault_health_url"
 for (( i=1; i<="$MAX_RETRIES"; i++ )); do
@@ -26,13 +27,18 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
         
         elif [[ "$status" -eq 501 ]]; then
         printf "\nVault server $server_ip is uninitialized.\n"
-        VAULT_ADDR=$vault_addr vault operator init
+        VAULT_ADDR=$vault_addr vault operator init -n 6 -t 3 | grep Unseal > $keys_file
+        sed  -i 's/Unseal.*: //g' $keys_file
         sleep "$SLEEP_BETWEEN_RETRIES_SEC"
-        break
+        printf "Vault server $server_ip has been initialized."
+        
+        #https://www.hashicorp.com/resources/keybase-vault-auto-unseal
         
         elif [[ "$status" -eq 503 ]]; then
-        printf "\nVault server $server_ip is sealed."
-        break
+        printf "\nVault server $server_ip is sealed.\n"
+        head -3 $keys_file | xargs -L1 vault operator unseal
+        sleep "$SLEEP_BETWEEN_RETRIES_SEC"
+        
         
     else
         printf "\nVault server $server_ip returned unexpected status code $status. Will sleep for $SLEEP_BETWEEN_RETRIES_SEC seconds and check again."
