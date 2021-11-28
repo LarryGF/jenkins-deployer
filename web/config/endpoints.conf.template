@@ -12,7 +12,6 @@ server {
 
   location / {
     ##TODO Need to figure out how to run on a different path
-          # proxy_pass http://vault:8200/;
           proxy_pass ${VAULT_HOST}:${VAULT_PORT}/;
           proxy_set_header   Host $host;
           proxy_set_header   X-Real-IP $remote_addr;

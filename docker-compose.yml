@@ -43,14 +43,14 @@ services:
     networks:
       - jenkins-net
     environment:
-      - NGINX_HOST=mordor
-      - NGINX_PORT=80
-      - JENKINS_URL=http://jenkins
-      - JENKINS_PORT=8080
-      - JENKINS_PATH=jenkins
-      - VAULT_HOST=http://vault
-      - VAULT_PORT=8200
-      - VAULT_PATH
+      - NGINX_HOST=${NGINX_HOST}
+      - NGINX_PORT=${NGINX_PORT}
+      - JENKINS_URL=${JENKINS_URL}
+      - JENKINS_PORT=${JENKINS_PORT}
+      - JENKINS_PATH=${JENKINS_PATH}
+      - VAULT_HOST=${VAULT_HOST}
+      - VAULT_PORT=${VAULT_PORT}
+      - VAULT_PATH=${VAULT_PATH}
 
   vault-server:
     container_name: vault
@@ -59,7 +59,7 @@ services:
     ports:
       - "8200:8200"
     environment:
-      - VAULT_ADDR='http://0.0.0.0:8200'
+      - VAULT_ADDR=http://0.0.0.0:8200
       - HOME=/var/vault
       # - VAULT_DEV_ROOT_TOKEN_ID="vault-plaintext-root-token"
     cap_add:
