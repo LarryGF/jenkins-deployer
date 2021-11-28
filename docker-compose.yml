@@ -1,6 +1,5 @@
 version: "3.7"
 
-
 services:
   jenkins:
     build:
@@ -36,6 +35,10 @@ services:
   
   web:
     container_name: nginx
+    depends_on:
+      - jenkins
+      - vault
+      - consul
     build:
       context: ./web
     ports:
@@ -52,26 +55,51 @@ services:
       - VAULT_PORT=${VAULT_PORT}
       - VAULT_PATH=${VAULT_PATH}
 
-  vault-server:
+  vault:
     container_name: vault
-    build:
-      context: ./vault
+    image: vault:latest
     ports:
       - "8200:8200"
+    depends_on:
+      - consul
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
-      - HOME=/var/vault
+      # - HOME=/var/vault
       # - VAULT_DEV_ROOT_TOKEN_ID="vault-plaintext-root-token"
     cap_add:
       - IPC_LOCK
-
-    entrypoint: vault server -config=/vault/config/vault.json
-
-    volumes:
-          - ./vault_data/file:/vault/file:rw
-          # - ./vault/config:/vault/config:rw
+    entrypoint: vault server -config=/config/vault.hcl
+    # command: vault server -config=/config/vault.hcl
+    volumes_from:
+      - consul
     networks:
       - jenkins-net
+
+  consul:
+    container_name: consul
+    image: consul:latest
+    ports:
+        - "8500:8500"
+        - "8300:8300"
+    volumes:
+        - ./consul/config:/config
+        - ./consul_data/data:/data
+    command: agent -server  -bind 0.0.0.0 -client 0.0.0.0 -bootstrap-expect=1 #-data-dir=/data
+    networks:
+      - jenkins-net
+  
+  # webui:
+  #   container_name: webui
+  #   image: djenriquez/vault-ui
+  #   ports:
+  #       - "9090:8000"
+  #   networks:
+  #     - jenkins-net
+  #   environment:
+  #       NODE_TLS_REJECT_UNAUTHORIZED: 0
+  #       VAULT_URL_DEFAULT: https://vault:8200
+
+
 
 
 networks:

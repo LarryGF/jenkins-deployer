@@ -8,10 +8,13 @@ DOCKER_GID=$docker_gid docker-compose up --build --remove-orphans -d
 
 #Need to set the VAULT_URL env var before running the script if it's running in a different host/port
 SLEEP_BETWEEN_RETRIES_SEC=${SLEEP_BETWEEN_RETRIES_SEC:-'2'}
-MAX_RETRIES=${MAX_RETRIES:-'3'}
+MAX_RETRIES=${MAX_RETRIES:-'10'}
 vault_addr=${VAULT_URL:-'http://127.0.0.1:8200'}
 vault_health_url="${vault_addr}/v1/sys/health"
+export VAULT_ADDR=$vault_addr
 keys_file=${KEYS_FILE:-'./keys/keys'}
+total_key=${TOTAL_KEYS:-6}
+used_keys=${USED_KEYS:-3}
 
 printf "\nTrying to initialize Vault deployment running on: $vault_addr \nVerifying status of Vault deployment running on: $vault_health_url"
 for (( i=1; i<="$MAX_RETRIES"; i++ )); do
@@ -27,16 +30,17 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
         
         elif [[ "$status" -eq 501 ]]; then
         printf "\nVault server $server_ip is uninitialized.\n"
-        VAULT_ADDR=$vault_addr vault operator init -n 6 -t 3 | grep Unseal > $keys_file
+        vault operator init -n $total_key -t $used_keys > output
+        vault_token=$(grep 'Initial Root Token:' output | awk '{print substr($NF, 1, length($NF)-1)}')
+        export VAULT_TOKEN=$vault_token
+        cat output | grep Unseal > $keys_file
         sed  -i 's/Unseal.*: //g' $keys_file
+        rm output
         sleep "$SLEEP_BETWEEN_RETRIES_SEC"
         printf "Vault server $server_ip has been initialized."
-        
-        #https://www.hashicorp.com/resources/keybase-vault-auto-unseal
-        
         elif [[ "$status" -eq 503 ]]; then
         printf "\nVault server $server_ip is sealed.\n"
-        head -3 $keys_file | xargs -L1 vault operator unseal
+        head -$used_keys $keys_file | xargs -L1 vault operator unseal
         sleep "$SLEEP_BETWEEN_RETRIES_SEC"
         
         
