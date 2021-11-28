@@ -36,13 +36,21 @@ services:
   
   web:
     container_name: nginx
-
     build:
       context: ./web
     ports:
         - "80:80"
     networks:
       - jenkins-net
+    environment:
+      - NGINX_HOST=mordor
+      - NGINX_PORT=80
+      - JENKINS_URL=http://jenkins
+      - JENKINS_PORT=8080
+      - JENKINS_PATH=jenkins
+      - VAULT_HOST=http://vault
+      - VAULT_PORT=8200
+      - VAULT_PATH
 
   vault-server:
     container_name: vault
