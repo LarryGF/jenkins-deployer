@@ -48,23 +48,25 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
         rm output
         elif [[ "$status" -eq 503 ]]; then
         printf "\n[**] Vault server $server_ip is sealed.\n"
+        vault_token=$(cat "${keys_path}token")
         head -$used_keys "${keys_path}key" | xargs -L1 vault operator  unseal -address=$vault_addr
         sleep "$SLEEP_BETWEEN_RETRIES_SEC"
         
+        printf "\n[*] Determining auth process and user setup\n"
+        if [[ ! $(vault auth list | grep userpass) ]]; then
+            printf "\n[*] Initializing auth process and user setup\n"
+            vault login -address=$vault_addr token=$vault_token
+            printf "\n[*] Creating user/password\n"
+            vault auth enable  -address=$vault_addr userpass
+            vault policy write -address=$vault_addr $vault_user ./consul/config/admin.hcl
+            vault write -address=$vault_addr auth/userpass/users/webui password=$vault_pass policies=$vault_user
+        else
+            printf "\n[*] Auth process and user setup already exists\n"
+        
+        fi
         
     else
         printf "\nVault server $server_ip returned unexpected status code $status. Will sleep for $SLEEP_BETWEEN_RETRIES_SEC seconds and check again."
         sleep "$SLEEP_BETWEEN_RETRIES_SEC"
     fi
 done
-
-printf "\n[*] Initializing auth process and user setup\n"
-vault login -address=$vault_addr token=$vault_token
-printf "\n[*] Creating user/password\n"
-vault auth enable  -address=$vault_addr userpass
-vault policy write -address=$vault_addr $vault_user ./consul/config/admin.hcl
-vault write -address=$vault_addr auth/userpass/users/webui password=$vault_pass policies=$vault_user
-
-# ## CREATE BACKUP TOKEN
-# printf "\n[*] Create backup token..."
-# vault token-create -address=$vault_addr -display-name="backup_token" | awk '/token/{i++}i==2' | awk '{print "backup_token: " $2}' >> "${keys_path}key_backup"
