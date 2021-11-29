@@ -88,18 +88,6 @@ services:
     networks:
       - jenkins-net
   
-  # webui:
-  #   container_name: webui
-  #   image: djenriquez/vault-ui
-  #   ports:
-  #       - "9090:8000"
-  #   networks:
-  #     - jenkins-net
-  #   environment:
-  #       NODE_TLS_REJECT_UNAUTHORIZED: 0
-  #       VAULT_URL_DEFAULT: https://vault:8200
-
-
 
 
 networks:
