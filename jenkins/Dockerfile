@@ -17,11 +17,14 @@ RUN chown -R jenkins:jenkins /var/cache/jenkins
 RUN groupadd -g ${DOCKER_GID} docker
 RUN usermod -a -G docker jenkins
 
-#### Commented out for dev purposes, uncomment it for a normal run
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+# RUN apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+# RUN apt-get update && apt-get install vault
+### Commented out for dev purposes, uncomment it for a normal run
 # RUN apt-get update \
 #     && apt-get install -y \
-#     docker \
-#     docker.io
+#     ansible
+
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 
 USER jenkins

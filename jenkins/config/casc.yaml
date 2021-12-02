@@ -16,6 +16,12 @@ credentials:
             id: "github-app"
             # apiUri: https://my-custom-github-enterprise.com/api/v3 # optional only required for GitHub enterprise
             privateKey: "${readFile:${SSH_PRIVATE_FILE_PATH}}"
+      - vaultAppRoleCredential:
+          id: "vault-app-role"
+          # these commited values are test values, replace with your own
+          roleId: 02fd9b6e-9b02-0a63-a771-75d658d2f9f8
+          secretId: 761cb97a-4fb5-1f80-9e00-cb420147c9af
+          scope: GLOBAL
 
 
 security:
@@ -51,6 +57,7 @@ jenkins:
 
   authorizationStrategy:
     # ALL params are required
+    # https://stackoverflow.com/questions/60559456/configuring-jenkins-with-github-authorization
     github:
       # This is case sensitive
       adminUserNames: ${ADMIN_USERS}
@@ -92,6 +99,39 @@ jenkins:
       excludeClientIPFromCrumb: true
 
 
+jobs:
+  - file: /tmp/DSL-jobs/seed.groovy
+
+
+tool:
+  dockerTool:
+    installations:
+    - name: "docker-latest"
+      properties:
+      - installSource:
+          installers:
+            - fromDocker:
+                version: latest
+  nodejs:
+    installations:
+    - name: "nodejs-17"
+      properties:
+      - installSource:
+          installers:
+            - nodeJSInstaller:
+                id: "NodeJS 17.1.0"
+
+  ansibleInstallation:
+    installations:
+    - name: "ansible-latest"
+      properties:
+      - installSource:
+          installers:
+          - command:
+              command: "apt-get update && apt-get install -y ansible"
+              toolHome: "/usr/bin/ansible"
+
+
 unclassified:
   location:
     url: http://mordor:8080/jenkins
@@ -106,26 +146,9 @@ unclassified:
   ansiColorBuildWrapper:
     globalColorMapName: xterm
 
-
-jobs:
-  - file: /tmp/DSL-jobs/seed.groovy
-
-
-tool:
-  dockerTool:
-    installations:
-    - name: "docker-latest"
-      properties:
-      - installSource:
-          installers:
-            - fromDocker:
-                version: latest
-  
-  nodejs:
-    installations:
-    - name: "nodejs-17"
-      properties:
-      - installSource:
-          installers:
-            - nodeJSInstaller:
-                id: "NodeJS 17.1.0"
+  hashicorpVault:
+    configuration:
+      engineVersion: 2  
+      vaultCredentialId: "vault-app-role"
+      vaultUrl: "http://mordor/"
+      prefixPath: "kv/jenkins"
