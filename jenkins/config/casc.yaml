@@ -19,8 +19,8 @@ credentials:
       - vaultAppRoleCredential:
           id: "vault-app-role"
           # these commited values are test values, replace with your own
-          roleId: 02fd9b6e-9b02-0a63-a771-75d658d2f9f8
-          secretId: 761cb97a-4fb5-1f80-9e00-cb420147c9af
+          roleId: f4c04194-1ced-3c39-ae93-e1b2705036a5
+          secretId: 5f735c64-c8c8-4508-4b7b-2a6b38fa82f9
           scope: GLOBAL
 
 
@@ -148,7 +148,8 @@ unclassified:
 
   hashicorpVault:
     configuration:
-      engineVersion: 2  
+      ##TODO change to version 2
+      engineVersion: 1  
       vaultCredentialId: "vault-app-role"
       vaultUrl: "http://mordor/"
       prefixPath: "kv/jenkins"

@@ -19,7 +19,7 @@ services:
       - SSH_PRIVATE_FILE_PATH=${SSH_PRIVATE_FILE_PATH}
       - ADMIN_USERS=${ADMIN_USERS}
       - GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER}
-      - CASC_VAULT_FILE=/run/secrets/jcasc_vault
+      # - CASC_VAULT_FILE=/run/secrets/jcasc_vault
     ports:
       - 8080:8080
       - 50000:50000

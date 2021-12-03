@@ -4,6 +4,10 @@
 path "kv/jenkins/*" {
   capabilities = [ "create", "read", "update", "delete", "list" ]
 }
+path "auth/approle/login" { 
+  capabilities = [ "create", "read" ] 
+}
+
 path "sys/auth/approle/*" {
   capabilities = [ "create", "read", "update", "delete", "sudo" ]
 }
@@ -12,9 +16,6 @@ path "sys/policies/acl/*" {
 }
 path "/auth/token/create" {
   capabilities = ["update"]
-}
-path "kv/jenkins" {
-  capabilities = [ "read", "create", "update", "list" ]
 }
 path "auth/approle/role/jenkins/secret-id" {
   capabilities = ["read","create","update"]

@@ -24,7 +24,7 @@ vault_user=${VAULT_USER:-'admin'}
 vault_pass=${VAULT_PASS:-'admin'}
 #############################################################
 
-printf "\n[*] Trying to initialize Vault deployment running on: $vault_addr \n Verifying status of Vault deployment running on: $vault_health_url\n"
+printf "\n[*] Trying to initialize Vault deployment running on: $vault_addr \nVerifying status of Vault deployment running on: $vault_health_url\n"
 for (( i=1; i<="$MAX_RETRIES"; i++ )); do
     response=$(curl --show-error --location --insecure --silent --write-out "HTTPSTATUS:%{http_code}" "$vault_health_url" || true)
     status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
@@ -35,9 +35,11 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
         printf "\n[*] Determining auth process and user setup\n"
         if [[ ! $(vault secrets list | grep kv) ]]; then
             printf "\n[*] Enabling kv secrets \n"
-            vault secrets enable -version=2 kv
+            ##TODO make it work with version 2
+            #needed to switch this due to conflicts of jenkins plugin with kv version 2
+            vault secrets enable -version=1 kv
         else
-            printf "\n[*] kv secrets enabled \n"
+            printf "\n[*] kv secrets already enabled \n"
         fi
         if [[ ! $(vault list auth/userpass/users | grep jenkins) ]]; then
             printf "\n[*] Initializing jenkins user \n"
@@ -46,14 +48,13 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
                 printf "\n[*] Creating Jenkins appRole\n"
                 vault auth enable -address=$vault_addr approle
                 vault write auth/approle/role/jenkins \
-                token_policies=jenkins \
-                secret_id_ttl=60m \
-                secret_id_num_uses=5 \
-                enable_local_secret_ids=false \
+                secret_id_ttl=10m \
                 token_num_uses=10 \
-                token_ttl=1h \
-                token_max_ttl=3h \
-                token_type=default \
+                token_ttl=20m \
+                token_max_ttl=30m \
+                secret_id_num_uses=40 \
+                token_policies="admin"
+                
                 vault read auth/approle/role/jenkins/role-id > $keys_path/jenkins_AppRole
                 vault write -force auth/approle/role/jenkins/secret-id >> $keys_path/jenkins_AppRole
             fi
@@ -95,7 +96,7 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
         
         
     else
-        printf "\nVault server $server_ip returned unexpected status code $status. Will sleep for $SLEEP_BETWEEN_RETRIES_SEC seconds and check again."
+        printf "\nVault server $server_ip returned unexpected status code $status. Will sleep for $SLEEP_BETWEEN_RETRIES_SEC seconds and check again.\n"
         sleep "$SLEEP_BETWEEN_RETRIES_SEC"
     fi
 done
