@@ -6,6 +6,7 @@ ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/ref/casc.yaml"
 USER root
 COPY --chown=jenkins:jenkins ./config/plugins.txt /usr/share/jenkins/ref/plugins.txt
 COPY --chown=jenkins:jenkins ./config/keys/converted-github-app.pem /tmp/converted-github-app.pem
+# COPY --chown=jenkins:jenkins ./config/keys/known_hosts /var/jenkins_home/.ssh/known_hosts
 COPY --chown=jenkins:jenkins ./config/DSL-jobs /tmp/DSL-jobs
 
 #### Mounting to ease development
@@ -28,3 +29,5 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 
 USER jenkins
+RUN mkdir "${JENKINS_HOME}/.ssh"
+

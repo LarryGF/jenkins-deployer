@@ -4,3 +4,4 @@ jenkins_logs/*
 keys/*
 jenkins/config/keys/*
 consul_data/*
+jenkins/jenkins-cli.jar

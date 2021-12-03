@@ -53,8 +53,7 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
                 token_ttl=20m \
                 token_max_ttl=30m \
                 secret_id_num_uses=40 \
-                token_policies="admin"
-                
+                token_policies="jenkins"
                 vault read auth/approle/role/jenkins/role-id > $keys_path/jenkins_AppRole
                 vault write -force auth/approle/role/jenkins/secret-id >> $keys_path/jenkins_AppRole
             fi
@@ -100,3 +99,14 @@ for (( i=1; i<="$MAX_RETRIES"; i++ )); do
         sleep "$SLEEP_BETWEEN_RETRIES_SEC"
     fi
 done
+
+### JENKINS SETUP ##############################################
+role_id="$(cat $keys_path/jenkins_AppRole | grep 'role_id' | head -1| awk '{print substr($NF, 1, length($NF))}')"
+secret_id="$(cat $keys_path/jenkins_AppRole | grep 'secret_id' | head -1 | awk '{print substr($NF, 1, length($NF))}')"
+echo $secret_id
+sed  "s/JENKINS_VAULT_ROLE_ID.*/JENKINS_VAULT_ROLE_ID=${role_id}/" -i .env
+sed  "s/JENKINS_VAULT_SECRET_ID.*/JENKINS_VAULT_SECRET_ID=${secret_id}/" -i .env
+
+DOCKER_GID=$docker_gid docker-compose up -d
+# Need to figure out a way of reloading config instead of restarting container
+DOCKER_GID=$docker_gid docker-compose restart jennkins
