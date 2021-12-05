@@ -5,7 +5,7 @@ printf "\n[*] Trying to figure out GID of docker.sock"
 docker_gid=`ls -ldn ${DOCKER_PATH:-'/var/run/docker.sock'} | awk '{print $4}'`
 printf "\n[*] Docker GID: $docker_gid \n Bringing the compose up with correct ownership for docker.sock"
 
-DOCKER_GID=$docker_gid docker-compose up --build --remove-orphans -d
+DOCKER_GID=$docker_gid docker-compose up --build --remove-orphans -d vault consul
 
 #### VAULT SETUP #################################################################################
 
@@ -103,10 +103,9 @@ done
 ### JENKINS SETUP ##############################################
 role_id="$(cat $keys_path/jenkins_AppRole | grep 'role_id' | head -1| awk '{print substr($NF, 1, length($NF))}')"
 secret_id="$(cat $keys_path/jenkins_AppRole | grep 'secret_id' | head -1 | awk '{print substr($NF, 1, length($NF))}')"
-echo $secret_id
 sed  "s/JENKINS_VAULT_ROLE_ID.*/JENKINS_VAULT_ROLE_ID=${role_id}/" -i .env
 sed  "s/JENKINS_VAULT_SECRET_ID.*/JENKINS_VAULT_SECRET_ID=${secret_id}/" -i .env
 
-DOCKER_GID=$docker_gid docker-compose up -d
+DOCKER_GID=$docker_gid docker-compose up -d traefik jenkins whoami
 # Need to figure out a way of reloading config instead of restarting container
-DOCKER_GID=$docker_gid docker-compose restart jennkins
+# DOCKER_GID=$docker_gid docker-compose restart jenkins

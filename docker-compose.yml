@@ -6,6 +6,12 @@ services:
       context: ./jenkins
       args:
         DOCKER_GID: ${DOCKER_GID}
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jenkins.rule=Host(`mordor`)"
+      - "traefik.http.routers.jenkins.rule=PathPrefix(`/jenkins`)"
+      - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
+    
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       - JENKINS_ADMIN_ID=${JENKINS_ADMIN_ID}
@@ -34,46 +40,52 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       # just mounting to ease development
       - ./jenkins/config/casc.yaml:/usr/share/jenkins/ref/casc.yaml
-    # secrets:
-    #   - jcasc_vault
   
-  web:
-    container_name: nginx
-    depends_on:
-      - jenkins
-      - vault
-      - consul
-    build:
-      context: ./web
+  
+  traefik:
+    image: "traefik:v2.5"
+    container_name: "traefik"
     ports:
-        - "80:80"
+      - "80:80"
+      - "8090:8080"
+    volumes:
+      - ./traefik/config/traefik.yml:/etc/traefik/traefik.yml 
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - jenkins-net
-    environment:
-      - NGINX_HOST=${NGINX_HOST}
-      - NGINX_PORT=${NGINX_PORT}
-      - JENKINS_URL=${JENKINS_URL}
-      - JENKINS_PORT=${JENKINS_PORT}
-      - JENKINS_PATH=${JENKINS_PATH}
-      - VAULT_HOST=${VAULT_HOST}
-      - VAULT_PORT=${VAULT_PORT}
-      - VAULT_PATH=${VAULT_PATH}
+
+  whoami:
+    image: "traefik/whoami"
+    container_name: "simple-service"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`mordor`)"
+      - "traefik.http.routers.whoami.rule=Path(`/web`)"
+      - "traefik.http.services.whoami.loadbalancer.server.port=80"
+    networks:
+      - jenkins-net
 
   vault:
     container_name: vault
     image: vault:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vault.rule=Host(`mordor`)"
+      - "traefik.http.routers.vault.rule=PathPrefix(`/`)"
+      # - "traefik.http.routers.vault.middlewares=vault-middleware"
+      # - "traefik.http.middlewares.vault-middleware.stripprefix.prefixes=/vault"
+      # - "traefik.http.middlewares.vault-middleware.stripprefix.forceSlash=false"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
     ports:
       - "8200:8200"
     depends_on:
       - consul
     environment:
-      - VAULT_ADDR=http://0.0.0.0:8200
-      # - HOME=/var/vault
-      # - VAULT_DEV_ROOT_TOKEN_ID="vault-plaintext-root-token"
+      - VAULT_ADDR=${VAULT_ADDR}
+     
     cap_add:
       - IPC_LOCK
     entrypoint: vault server -config=/config/vault.hcl
-    # command: vault server -config=/config/vault.hcl
     volumes_from:
       - consul
     networks:
@@ -96,7 +108,3 @@ services:
 
 networks:
   jenkins-net:
-
-# secrets:
-#   jcasc_vault:
-#     file: ./keys/jcasc_vault
