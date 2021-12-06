@@ -12,8 +12,8 @@ DOCKER_GID=$docker_gid docker-compose up --build --remove-orphans -d vault consu
 ### INITIAL VARIABLES ##############################################
 SLEEP_BETWEEN_RETRIES_SEC=${SLEEP_BETWEEN_RETRIES_SEC:-'2'}
 MAX_RETRIES=${MAX_RETRIES:-'10'}
-#Need to set the VAULT_URL env var before running the script if it's running in a different host/port
-vault_addr=${VAULT_URL:-'http://127.0.0.1:8200'}
+#Need to set the VAULT_ADDR env var before running the script if it's running in a different host/port
+vault_addr=${VAULT_ADDR:-'http://127.0.0.1:8200'}
 export VAULT_ADDR=${vault_addr}
 vault_health_url="${vault_addr}/v1/sys/health"
 keys_path=${KEYS_PATH:-'./keys/'}
@@ -106,6 +106,6 @@ secret_id="$(cat $keys_path/jenkins_AppRole | grep 'secret_id' | head -1 | awk '
 sed  "s/JENKINS_VAULT_ROLE_ID.*/JENKINS_VAULT_ROLE_ID=${role_id}/" -i .env
 sed  "s/JENKINS_VAULT_SECRET_ID.*/JENKINS_VAULT_SECRET_ID=${secret_id}/" -i .env
 
-DOCKER_GID=$docker_gid docker-compose up -d traefik jenkins whoami
+DOCKER_GID=$docker_gid docker-compose up --build --remove-orphans -d traefik jenkins whoami ngrok
 # Need to figure out a way of reloading config instead of restarting container
 # DOCKER_GID=$docker_gid docker-compose restart jenkins
