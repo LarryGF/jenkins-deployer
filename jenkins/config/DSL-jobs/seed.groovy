@@ -2,6 +2,9 @@
 organizationFolder('GitHub Organization Folder') {
     description('GitHub Organization folder configured with JCasC')
     displayName("${GITHUB_REPO_OWNER}")
+    triggers {
+        cron('H/5 * * * *')
+    }
     organizations {
         github {
             repoOwner("${GITHUB_REPO_OWNER}")

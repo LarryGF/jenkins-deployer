@@ -2,7 +2,7 @@ FROM jenkins/jenkins:latest
 # This is the GID for the docker.sock file
 ARG DOCKER_GID
 ENV JENKINS_OPTS="--prefix=/jenkins --handlerCountMax=300 --logfile=/var/log/jenkins/jenkins.log --webroot=/var/cache/jenkins/war"
-ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/ref/casc.yaml"
+ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/ref/casc_configs"
 USER root
 COPY --chown=jenkins:jenkins ./config/plugins.txt /usr/share/jenkins/ref/plugins.txt
 COPY --chown=jenkins:jenkins ./config/keys/converted-github-app.pem /tmp/converted-github-app.pem

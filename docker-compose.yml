@@ -37,7 +37,7 @@ services:
       - ./jenkins_logs:/var/log/jenkins
       - /var/run/docker.sock:/var/run/docker.sock
       # just mounting to ease development
-      - ./jenkins/config/casc.yaml:/usr/share/jenkins/ref/casc.yaml
+      - ./jenkins/config/casc_configs:/usr/share/jenkins/ref/casc_configs
   
   
   traefik:

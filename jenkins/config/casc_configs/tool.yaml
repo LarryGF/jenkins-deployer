@@ -1,0 +1,27 @@
+tool:
+  dockerTool:
+    installations:
+    - name: "docker-latest"
+      properties:
+      - installSource:
+          installers:
+            - fromDocker:
+                version: latest
+  nodejs:
+    installations:
+    - name: "nodejs-17"
+      properties:
+      - installSource:
+          installers:
+            - nodeJSInstaller:
+                id: "NodeJS 17.1.0"
+
+  ansibleInstallation:
+    installations:
+    - name: "ansible-latest"
+      properties:
+      - installSource:
+          installers:
+          - command:
+              command: "apt-get update && apt-get install -y ansible"
+              toolHome: "/usr/bin/ansible"

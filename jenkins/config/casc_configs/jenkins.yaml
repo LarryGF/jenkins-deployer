@@ -1,0 +1,65 @@
+jenkins:
+  numExecutors: 0
+
+  mode: EXCLUSIVE
+
+  systemMessage: |
+    This Jenkins is 100% configured and managed 'as code'.
+    Config is now mostly handled by the 'Jenkins Configuration as Code' (JCasC) plugin.
+
+  securityRealm:
+    github:
+    ## MANDATORY
+    # Need to create OAuth connector in GitHub
+      githubWebUri: "https://github.com"
+      githubApiUri: "https://api.github.com"
+      clientID: ${GITHUB_CLIENT_ID}
+      clientSecret: ${GITHUB_CLIENT_SECRET}
+      oauthScopes: "read:org,user:email"
+
+  remotingSecurity:
+    enabled: true
+
+  authorizationStrategy:
+    # ALL params are required
+    # https://stackoverflow.com/questions/60559456/configuring-jenkins-with-github-authorization
+    github:
+      # This is case sensitive
+      adminUserNames: ${ADMIN_USERS}
+      allowAnonymousJobStatusPermission: false
+      allowAnonymousReadPermission: false
+      allowCcTrayPermission: true
+      allowGithubWebHookPermission: true
+      authenticatedUserCreateJobPermission: true
+      authenticatedUserReadPermission: true
+      organizationNames: ""
+      useRepositoryPermissions: true    
+
+  clouds:
+    - docker:
+        name: "docker"
+        dockerApi:
+          dockerHost:
+            uri: "unix:///var/run/docker.sock"
+        templates:
+          - labelString: "docker-agent"
+            dockerTemplateBase:
+              image: "jenkins/agent"
+              # volumes:
+              #   - first:/hello
+              #   - second:/world
+              # environmentsString: |
+              #   hello=world
+              #   foo=bar
+            remoteFs: "/home/jenkins/agent"
+            connector:
+              attach:
+                user: "jenkins"
+            instanceCapStr: "10"
+            retentionStrategy:
+              idleMinutes: 1
+
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: true
+

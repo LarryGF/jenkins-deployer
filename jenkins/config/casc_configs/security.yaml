@@ -1,0 +1,9 @@
+security:
+  sSHD:
+    port: 0
+  queueItemAuthenticator:
+    authenticators:
+      - global:
+          ##TODO switch this to the running user and fix problem running docker
+          strategy: triggeringUsersAuthorizationStrategy
+          # strategy: systemAuthorizationStrategy

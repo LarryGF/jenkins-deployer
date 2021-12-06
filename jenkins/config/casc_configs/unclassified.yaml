@@ -1,0 +1,21 @@
+unclassified:
+  location:
+    url: http://mordor:8080/jenkins
+
+  githubpluginconfig:
+    configs:
+      - name: "GitHub"
+        apiUrl: "https://api.github.com"
+        credentialsId: "github-token"
+        manageHooks: true
+  
+  ansiColorBuildWrapper:
+    globalColorMapName: xterm
+
+  hashicorpVault:
+    configuration:
+      ##TODO change to version 2
+      engineVersion: 1  
+      vaultCredentialId: "vault-app-role"
+      vaultUrl: "http://mordor/"
+      prefixPath: "kv/jenkins"
