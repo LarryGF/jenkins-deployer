@@ -8,3 +8,4 @@ sudo rm -r consul_data/*
 sudo rm -r keys/*
 sudo rm -r jenkins_home/*
 sudo rm -r jenkins_logs/*
+kubectl delete -f portainer-agent-k8s.yaml

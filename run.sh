@@ -109,3 +109,31 @@ sed  "s/JENKINS_VAULT_SECRET_ID.*/JENKINS_VAULT_SECRET_ID=${secret_id}/" -i .env
 DOCKER_GID=$docker_gid docker-compose up --build --remove-orphans -d traefik jenkins whoami ngrok
 # Need to figure out a way of reloading config instead of restarting container
 # DOCKER_GID=$docker_gid docker-compose restart jenkins
+
+
+
+### PORTAINER AND KUBERNETES SETUP WITH MINIKUBE #############################
+minikube=${MINIKUBE:-true}
+minikube_user=${MINIKUBE_USER:-minikube}
+minikube_key_secret=${MINIKUBE_KEY_SECRET:-secret}
+key_path=${MINIKUBE_KEY_PATH:-'./jenkins/config/keys/minikube.pfx'}
+if [[ $minikube ]];then
+    curl -L https://downloads.portainer.io/portainer-agent-ce29-k8s-nodeport.yaml -o portainer-agent-k8s.yaml;
+    kubectl apply -f portainer-agent-k8s.yaml
+    node_port=$(kubectl get service portainer-agent --namespace=portainer --output='jsonpath={.spec.ports[0].nodePort}')
+    ip_address=$(kubectl get nodes --output='jsonpath={.items[?(@.metadata.name=="minikube")].status.addresses[?(@.type=="InternalIP")].address}')
+    printf "\nThe path for portainer is: ${ip_address}:${node_port}"
+    # Create jenkins SA
+    kubectl apply -f jenkins/config/k8s/jenkins-sa.yaml
+    api_endpoint=$(kubectl config view -o='jsonpath={.clusters[?(@.name=="minikube")].cluster.server}')
+    printf "\nThe k8s API is exposed on $api_endpoint"
+    minikube_cert=$(kubectl config view -o='jsonpath={.users[?(@.name=="minikube")].user.client-certificate}')
+    minikube_key=$(kubectl config view -o='jsonpath={.users[?(@.name=="minikube")].user.client-key}')
+    minikube_ca=$(kubectl config view -o='jsonpath={.clusters[?(@.name=="minikube")].cluster.certificate-authority}')
+    
+    openssl pkcs12 -export -out $key_path -inkey $minikube_key -in $minikube_cert -certfile $minikube_ca -passout pass:$minikube_key_secret
+    printf "\nValidating the generated certificate"
+    printf "\nRequest finished with code: $(curl --cacert $minikube_ca --cert $key_path:$minikube_key_secret --cert-type P12 -s -o /dev/null -w "%{http_code}" https://$(minikube ip):8443)"
+    
+    
+fi

@@ -5,3 +5,4 @@ keys/*
 jenkins/config/keys/*
 consul_data/*
 jenkins/jenkins-cli.jar
+portainer-agent-k8s.yaml

@@ -4,8 +4,6 @@
     bash run.sh
 ```
 
-
-
 ## Configuration
 
 | VARIABLE                | TYPE                    | Default value | Description                                                  |
@@ -30,8 +28,15 @@
 | NGROK_PORT              | Integer                 |               | Port where Ngrok will forward traffic (must be the Jenkins port) |
 | NGROK_DEBUG             | Boolean                 |               |                                                              |
 
+### Adding Minikube to Portainer
 
+<https://docs.portainer.io/v/ce-2.9/admin/environments/add/kubernetes>
 
+```bash
+```
 
+```bash
+minikube service portainer-agent -n portainer
+```
 
-
+Use that _url_ in Portainer
