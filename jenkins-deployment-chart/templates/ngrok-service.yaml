@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+    kompose.version: 1.24.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ngrok
+  name: ngrok
+spec:
+  ports:
+    - name: "4040"
+      port: 4040
+      targetPort: 4040
+  selector:
+    io.kompose.service: ngrok
+status:
+  loadBalancer: {}

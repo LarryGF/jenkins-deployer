@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+    kompose.version: 1.24.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: jenkins
+  name: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: jenkins
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+        kompose.version: 1.24.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/jenkins-net: "true"
+        io.kompose.service: jenkins
+    spec:
+      containers:
+        - env:
+            - name: ADMIN_USERS
+            - name: DOCKER_PATH
+            - name: GITHUB_ACCESS_TOKEN
+            - name: GITHUB_APP_ID
+            - name: GITHUB_CLIENT_ID
+            - name: GITHUB_CLIENT_SECRET
+            - name: GITHUB_PRIVATE_KEY
+            - name: GITHUB_REPO_OWNER
+            - name: JAVA_OPTS
+              value: -Djenkins.install.runSetupWizard=false
+            - name: JENKINS_VAULT_ROLE_ID
+            - name: JENKINS_VAULT_SECRET_ID
+            - name: MINIKUBE_KEY_PATH
+            - name: MINIKUBE_KEY_SECRET
+            - name: SSH_PRIVATE_FILE_PATH
+          image: jenkins
+          name: jenkins
+          ports:
+            - containerPort: 8080
+            - containerPort: 50000
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/jenkins_home
+              name: jenkins-claim0
+            - mountPath: /var/log/jenkins
+              name: jenkins-claim1
+            - mountPath: /var/run/docker.sock
+              name: jenkins-claim2
+            - mountPath: /usr/share/jenkins/ref/casc_configs
+              name: jenkins-claim3
+      restartPolicy: Always
+      volumes:
+        - name: jenkins-claim0
+          persistentVolumeClaim:
+            claimName: jenkins-claim0
+        - name: jenkins-claim1
+          persistentVolumeClaim:
+            claimName: jenkins-claim1
+        - name: jenkins-claim2
+          persistentVolumeClaim:
+            claimName: jenkins-claim2
+        - name: jenkins-claim3
+          persistentVolumeClaim:
+            claimName: jenkins-claim3
+status: {}

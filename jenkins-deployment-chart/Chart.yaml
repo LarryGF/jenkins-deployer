@@ -1,0 +1,8 @@
+name: jenkins-deployment-chart
+description: A generated Helm Chart for jenkins-deployment-chart from Skippbox Kompose
+version: 0.0.1
+apiVersion: v1
+keywords:
+  - jenkins-deployment-chart
+sources:
+home:

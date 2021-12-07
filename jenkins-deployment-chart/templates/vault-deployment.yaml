@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+    kompose.version: 1.24.0 (HEAD)
+    traefik.enable: "true"
+    traefik.http.routers.vault.rule: PathPrefix(`/`)
+    traefik.http.services.vault.loadbalancer.server.port: "8200"
+  creationTimestamp: null
+  labels:
+    io.kompose.service: vault
+  name: vault
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: vault
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+        kompose.version: 1.24.0 (HEAD)
+        traefik.enable: "true"
+        traefik.http.routers.vault.rule: PathPrefix(`/`)
+        traefik.http.services.vault.loadbalancer.server.port: "8200"
+      creationTimestamp: null
+      labels:
+        io.kompose.network/jenkins-net: "true"
+        io.kompose.service: vault
+    spec:
+      containers:
+        - command:
+            - vault
+            - server
+            - -config=/config/vault.hcl
+          env:
+            - name: VAULT_ADDR
+          image: vault:latest
+          name: vault
+          ports:
+            - containerPort: 8200
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+          volumeMounts:
+            - mountPath: /config
+              name: vault-claim0
+            - mountPath: /data
+              name: vault-claim1
+      restartPolicy: Always
+      volumes:
+        - name: vault-claim0
+          persistentVolumeClaim:
+            claimName: vault-claim0
+        - name: vault-claim1
+          persistentVolumeClaim:
+            claimName: vault-claim1
+status: {}

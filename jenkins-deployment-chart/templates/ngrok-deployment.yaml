@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+    kompose.version: 1.24.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ngrok
+  name: ngrok
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ngrok
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+        kompose.version: 1.24.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/jenkins-net: "true"
+        io.kompose.service: ngrok
+    spec:
+      containers:
+        - env:
+            - name: NGROK_AUTH
+            - name: NGROK_DEBUG
+            - name: NGROK_LOOK_DOMAIN
+            - name: NGROK_PORT
+          image: wernight/ngrok:latest
+          name: ngrok
+          ports:
+            - containerPort: 4040
+          resources: {}
+      restartPolicy: Always
+status: {}

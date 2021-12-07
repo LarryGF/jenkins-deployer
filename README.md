@@ -40,3 +40,9 @@ minikube service portainer-agent -n portainer
 ```
 
 Use that _url_ in Portainer
+
+### Generating Helm chart with kompose
+
+```bash
+kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+```

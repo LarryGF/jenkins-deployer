@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+    kompose.version: 1.24.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: traefik
+  name: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: traefik
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -v -f docker-compose.yml -c -o jenkins-deployment-chart
+        kompose.version: 1.24.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/jenkins-net: "true"
+        io.kompose.service: traefik
+    spec:
+      containers:
+        - image: traefik:v2.5
+          name: traefik
+          ports:
+            - containerPort: 80
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/traefik/traefik.yml
+              name: traefik-claim0
+            - mountPath: /var/run/docker.sock
+              name: traefik-claim1
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: traefik-claim0
+          persistentVolumeClaim:
+            claimName: traefik-claim0
+        - name: traefik-claim1
+          persistentVolumeClaim:
+            claimName: traefik-claim1
+            readOnly: true
+status: {}

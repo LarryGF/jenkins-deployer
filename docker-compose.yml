@@ -25,6 +25,8 @@ services:
       - GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER}
       - JENKINS_VAULT_ROLE_ID=${JENKINS_VAULT_ROLE_ID}
       - JENKINS_VAULT_SECRET_ID=${JENKINS_VAULT_SECRET_ID}
+      - MINIKUBE_KEY_PATH=${MINIKUBE_KEY_PATH}
+      - MINIKUBE_KEY_SECRET=${MINIKUBE_KEY_SECRET}
     ports:
       - 8080:8080
       - 50000:50000
@@ -52,16 +54,6 @@ services:
     networks:
       - jenkins-net
 
-  whoami:
-    image: "traefik/whoami"
-    container_name: "simple-service"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`${HOST}`)"
-      - "traefik.http.routers.whoami.rule=Path(`/web`)"
-      - "traefik.http.services.whoami.loadbalancer.server.port=80"
-    networks:
-      - jenkins-net
 
   vault:
     container_name: vault
@@ -84,8 +76,11 @@ services:
     cap_add:
       - IPC_LOCK
     entrypoint: vault server -config=/config/vault.hcl
-    volumes_from:
-      - consul
+    # volumes_from:
+    #   - consul
+    volumes:
+      - ./consul/config:/config
+      - ./consul_data/data:/data
     networks:
       - jenkins-net
 
